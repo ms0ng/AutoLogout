@@ -1,0 +1,25 @@
+{
+  "Edition": {
+    "Version": "1.0",
+    "Download": "http://www.xxx.com/xxx.exe"
+  },
+  "Configure": {
+    "Active": true,
+    "RunOnlyOnce": false,
+    "LogoutNow": false,
+    "Time": [
+      "HH:MM:SS",
+      "value",
+      "value"
+    ],
+    "Date": {
+      "Sun": false,
+      "Mon": false,
+      "Tue": false,
+      "Wed": false,
+      "Thr": false,
+      "Fri": false,
+      "Sat": false
+    }
+  }
+}
