@@ -33,9 +33,27 @@ namespace AutoLogout
         static void Main(string[] args)
         {
             AutoLogout program = new AutoLogout();
-            //while (program.needUpdate==false)
+            int criticalError = 0;
+            while (program.needUpdate==false)
             {
-                program.run();
+                try
+                {
+                    program.run();
+                }catch(Exception e)
+                {
+                    criticalError++;
+                    if (criticalError >= 10)
+                    {
+                        program.sendMsg("执行程序时有" + criticalError + "次严重错误", e.StackTrace);
+                        continue;
+                    }else if (criticalError >= 50)
+                    {
+                        program.sendMsg("执行程序时有" + criticalError + "次严重错误,已关闭程序", e.StackTrace);
+                        break;
+                    }
+                    sleep(60 * 5);
+                }
+                
             }
         }
 
@@ -81,7 +99,7 @@ namespace AutoLogout
             if (jobj["Edition"]["Version"].Value<string>() != VERSION)
             {
                 
-                while(!FileDownload(jobj["Edition"]["Download"].Value<string>(), "AutoLogoutTemp.exe"))
+                while(!FileDownload(jobj["Edition"]["Download"].Value<string>(), "AutoLogout.exe"))
                 {
                     retryTimes++;
                     if((retryTimes % 10) == 0)
@@ -91,12 +109,29 @@ namespace AutoLogout
                     }
                         
                 }
-                //TODO:安装更新
+                //安装更新
                 string path = System.Environment.CurrentDirectory ;
-                string bat = "del " +path+"\\AutoLogout.exe"+
-                    "copy ";
-                needUpdate = true;
-                return;
+                string bat = "@echo off\r\n" +
+                    "ping localhost -n 5 > nul\r\n" +
+                    "del " + path + "\\AutoLogout.exe > nul\r\n" +
+                    "copy /y " + Path.GetTempPath() + "\\AutoLogout.exe " + path + " > nul\r\n"
+                    + "del " + Path.GetTempPath() + "\\AutoLogout.exe > nul";
+                
+                try
+                {
+                    if (File.Exists(Path.GetTempPath() + "\\Atlg.bat")) File.Delete(Path.GetTempPath() + "\\Atlg.bat");
+                    File.WriteAllText(Path.GetTempPath() + "\\Atlg.bat", bat);
+                    needUpdate = true;
+                    System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
+                    return;
+                }catch(Exception e)
+                {
+                    retryTimes++;
+                    if (retryTimes % 10 == 0)sendMsg("更新失败", "已重试次数:" + retryTimes + "\n" + e.Message);
+                    return;
+                }
+                
+                
 
             }
             //检查配置文件激活
@@ -336,7 +371,7 @@ namespace AutoLogout
             return false;
         }
 
-        void sleep(int s)
+        static void sleep(int s)
         {
             Thread.Sleep(1000 * s);
         }
