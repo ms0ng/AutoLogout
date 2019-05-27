@@ -24,7 +24,7 @@ namespace AutoLogout
     {
         static string VERSION = "1.0";  //版本号
         static string confURL = "https://raw.githubusercontent.com/ms0ng/AutoLogout/master/Configure.json";     //json配置文件地址
-        static string serverChanKey = "https://sc.ftqq.com/SCU52366Taf8a7d0930b38f0a3f662566bdd26d185cebdd4986c77.send";        //serverChan URL
+        static string serverChanKey = "";        //serverChan URL
 
         int retryTimes = 0;
         JObject jobj;
