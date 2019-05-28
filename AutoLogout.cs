@@ -28,7 +28,6 @@ namespace AutoLogout
             {
                 try
                 {
-                    //Console.ReadLine();
                     Debug("DEBUG RUN");
                     program.run();
                 }catch(Exception e)
@@ -38,7 +37,6 @@ namespace AutoLogout
                     if (criticalError >= 20)
                     {
                         program.sendMsg("执行程序时有" + criticalError + "次严重错误,已关闭程序", e.StackTrace);
-                        Console.ReadLine();
                         return;
                     }
                     else if (criticalError >= 10)
