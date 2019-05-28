@@ -1,14 +1,14 @@
 {
   "Edition": {
     "Version": "1.0",
-    "Download": "http://www.xxx.com/xxx.exe"
+    "Download": "https://github.com/ms0ng/AutoLogout/raw/master/AutoLogout.exe"
   },
   "Configure": {
     "Active": true,
     "RunOnlyOnce": false,
     "LogoutNow": false,
     "Time": [
-      "HH:MM",
+      "00:30",
       "value",
       "value"
     ],

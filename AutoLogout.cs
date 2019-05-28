@@ -6,17 +6,6 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 
-//http://58.240.51.118/logoutServlet
-/*
-Host: 58.240.51.118
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,* /*;q=0.8
-Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2
-Accept-Encoding: gzip, deflate
-Referer: http://58.240.51.118/style/portalv2_cujs/logon.jsp?paramStr=`````
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 293
-    */
 
 namespace AutoLogout
 {
@@ -34,7 +23,8 @@ namespace AutoLogout
         {
             AutoLogout program = new AutoLogout();
             int criticalError = 0;
-            while (program.needUpdate==false)
+            program.logout();
+            //while (program.needUpdate==false)
             {
                 try
                 {
@@ -42,14 +32,15 @@ namespace AutoLogout
                 }catch(Exception e)
                 {
                     criticalError++;
-                    if (criticalError >= 10)
-                    {
-                        program.sendMsg("执行程序时有" + criticalError + "次严重错误", e.StackTrace);
-                        continue;
-                    }else if (criticalError >= 50)
+                    if (criticalError >= 50)
                     {
                         program.sendMsg("执行程序时有" + criticalError + "次严重错误,已关闭程序", e.StackTrace);
-                        break;
+                        //break;
+                    }
+                    else if (criticalError >= 10)
+                    {
+                        program.sendMsg("执行程序时有" + criticalError + "次严重错误", e.StackTrace);
+                        //continue;
                     }
                     sleep(60 * 5);
                 }
@@ -246,6 +237,9 @@ namespace AutoLogout
 
         bool sendMsg(string text,string desp)
         {
+#if DEBUG
+            return true;
+#endif
             string url = serverChanKey;
             url += "?text=" + text;
             if (desp != null) url += "?desp=" + desp;
@@ -256,7 +250,7 @@ namespace AutoLogout
                 response.Close();
                 return true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }
@@ -264,20 +258,6 @@ namespace AutoLogout
         bool sendMsg(string text)
         {
             return sendMsg(text, null);
-        }
-
-        /// <summary>
-        /// 获取配置类
-        /// </summary>
-        /// <param name="url">URL地址</param>
-        /// <returns>配置类JObject</returns>
-        JObject readConf(string url)
-        {
-            StreamReader streamReader = new StreamReader(Path.GetTempPath()+"\\Configure.json");
-            string json = streamReader.ReadToEnd();
-            JObject jb=(JObject)JsonConvert.DeserializeObject(json);
-            return jb;
-            
         }
 
         /// <summary>
@@ -337,6 +317,10 @@ namespace AutoLogout
         /// <returns>运行结果</returns>
         bool logout() 
         {
+#if DEBUG
+            Console.WriteLine("DEBUG Logout!\n");
+            return true;
+#endif
             HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create("http://58.240.51.118/logoutServlet");
             req.Method = "GET";
             req.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0";
