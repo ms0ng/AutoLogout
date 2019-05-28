@@ -23,42 +23,51 @@ namespace AutoLogout
         {
             AutoLogout program = new AutoLogout();
             int criticalError = 0;
-            program.logout();
-            //while (program.needUpdate==false)
+            Debug("VERSION:"+VERSION);
+            while (program.needUpdate==false)
             {
                 try
                 {
+                    //Console.ReadLine();
+                    Debug("DEBUG RUN");
                     program.run();
                 }catch(Exception e)
                 {
+                    Debug(e.Message);
                     criticalError++;
-                    if (criticalError >= 50)
+                    if (criticalError >= 20)
                     {
                         program.sendMsg("执行程序时有" + criticalError + "次严重错误,已关闭程序", e.StackTrace);
-                        //break;
+                        Console.ReadLine();
+                        return;
                     }
                     else if (criticalError >= 10)
                     {
                         program.sendMsg("执行程序时有" + criticalError + "次严重错误", e.StackTrace);
-                        //continue;
+                        continue;
                     }
                     sleep(60 * 5);
                 }
-                
+                sleep(60 * 5);
             }
         }
 
+        /// <summary>
+        /// 程序执行的主要流程
+        /// </summary>
         void run()
         {
-            sleep(60 * 5);
+            
             //检查联网状态
             try
             {
                 HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create("https://cn.bing.com/");
                 WebResponse response = req.GetResponse();
                 response.Close();
-            } catch (Exception)
+                Debug("Internet Connected!");
+            } catch (Exception e)
             {
+                Debug(e.StackTrace);
                 sleep(60 * 5);
                 return;
             }
@@ -72,6 +81,7 @@ namespace AutoLogout
                 }
                 retryTimes++;
             }
+            Debug("Download Conf Complete!");
             //读取配置
             try
             {
@@ -79,9 +89,11 @@ namespace AutoLogout
                 string json = streamReader.ReadToEnd();
                 streamReader.Close();
                 jobj = (JObject)JsonConvert.DeserializeObject(json);
+                Debug("Read Conf Success!");
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Debug(e.StackTrace);
                 retryTimes++;
                 return;
             }
@@ -89,7 +101,7 @@ namespace AutoLogout
             //检查更新
             if (jobj["Edition"]["Version"].Value<string>() != VERSION)
             {
-                
+                Debug("Need Update Version:" + jobj["Edition"]["Version"].Value<string>());
                 while(!FileDownload(jobj["Edition"]["Download"].Value<string>(), "AutoLogout.exe"))
                 {
                     retryTimes++;
@@ -103,10 +115,11 @@ namespace AutoLogout
                 //安装更新
                 string path = System.Environment.CurrentDirectory ;
                 string bat = "@echo off\r\n" +
-                    "ping localhost -n 5 > nul\r\n" +
+                    //"ping localhost -n 5 > nul\r\n" +
                     "del " + path + "\\AutoLogout.exe > nul\r\n" +
-                    "copy /y " + Path.GetTempPath() + "\\AutoLogout.exe " + path + " > nul\r\n"
-                    + "del " + Path.GetTempPath() + "\\AutoLogout.exe > nul";
+                    "copy /y " + Path.GetTempPath() + "AutoLogout.exe " + path + "\\AutoLogout.exe > nul\r\n"
+                    + "del " + Path.GetTempPath() + "AutoLogout.exe > nul\r\n"+
+                    path + "\\AutoLogout.exe > nul";
                 
                 try
                 {
@@ -125,6 +138,7 @@ namespace AutoLogout
                 
 
             }
+            Debug("No need to update");
             //检查配置文件激活
             if (jobj["Configure"]["Active"].Value<bool>() == false) return;
 
@@ -138,7 +152,9 @@ namespace AutoLogout
             if (jobj["Configure"]["LogoutNow"].Value<bool>() == true) {
                 try
                 {
+                    Debug("Logout NOW!!!");
                     logout();
+                    return;
                 } catch (Exception e)
                 {
                     retryTimes++;
@@ -148,8 +164,11 @@ namespace AutoLogout
 
             }
             //检查日期
+            Debug("Checking Date");
             dateTime = DateTime.Now;
+            Debug(dateTime.ToString());
             string dayOfWeek = dateTime.DayOfWeek.ToString();
+            Debug("Today: " + dayOfWeek);
             int sleeptime = 60 * 60;        //单位:秒,暂停时间,设一个小时
             switch (dayOfWeek)
             {
@@ -157,69 +176,73 @@ namespace AutoLogout
                     if (jobj["Configure"]["Date"]["Mon"].Value<bool>() == false)
                     {
                         sleep(sleeptime);
-                        break;
+                        return;
                     }
                     break;
                 case "Tuesday":
                     if (jobj["Configure"]["Date"]["Tue"].Value<bool>() == false)
                     {
                         sleep(sleeptime);
-                        break;
+                        return;
                     }
                     break;
                 case "Wednesday":
                     if (jobj["Configure"]["Date"]["Wed"].Value<bool>() == false)
                     {
                         sleep(sleeptime);
-                        break;
+                        return;
                     }
                     break;
                 case "Thursday":
                     if (jobj["Configure"]["Date"]["Thu"].Value<bool>() == false)
                     {
                         sleep(sleeptime);
-                        break;
+                        return;
                     }
                     break;
                 case "Friday":
                     if (jobj["Configure"]["Date"]["Fri"].Value<bool>() == false)
                     {
                         sleep(sleeptime);
-                        break;
+                        return;
                     }
                     break;
                 case "Saturday":
                     if (jobj["Configure"]["Date"]["Sat"].Value<bool>() == false)
                     {
                         sleep(sleeptime);
-                        break;
+                        return;
                     }
                     break;
                 case "Sunday":
                     if (jobj["Configure"]["Date"]["Sun"].Value<bool>() == false)
                     {
                         sleep(sleeptime);
-                        break;
+                        return;
                     }
                     break;
                 default:
                     retryTimes++;
                     sendMsg("检查日期时出错", "已重试次数:" + retryTimes);
-                    break;
+                    return;
             }
 
             //检查时间
+            Debug("Check if it is the time...");
             int[] now = { dateTime.Hour, dateTime.Minute };
             JArray array = (JArray)JsonConvert.DeserializeObject(jobj["Configure"]["Time"].ToString());
-            string[] planTime = array[0].ToString().Split(":");
+            Debug("Json Planing Time:" + array.ToString());
+            string conf1 = array[0].ToString();
+            string[] planTime = conf1.Split(':');
             int[] plan =
             {
                 int.Parse(planTime[0]),
                 int.Parse(planTime[1])
             };
-            if (plan[0] != now[0]) return;
             int deltaTime = plan[1] - now[1];
             if (deltaTime < 0) deltaTime = -deltaTime;
+            Debug((plan[0]-now[0]).ToString()+"hours and "+deltaTime.ToString() + "minutes left");
+            if (plan[0] != now[0]) return;
             if (deltaTime > 5) return;
             try
             {
@@ -232,12 +255,14 @@ namespace AutoLogout
                 return;
             }
 
+            Debug("Task Over");
             retryTimes = 0;     //全部执行正常,错误次数归零
         }
 
         bool sendMsg(string text,string desp)
         {
 #if DEBUG
+            Debug(text + "\n" + desp);
             return true;
 #endif
             string url = serverChanKey;
@@ -286,17 +311,55 @@ namespace AutoLogout
             {
                 File.Delete(fullpath);
             }
+
+            //方法1
+            if(false)
+            {
+                try
+                {
+                    WebClient webClient = new WebClient();
+                    webClient.Encoding = Encoding.UTF8;
+                    string outText = webClient.DownloadString(url);
+                    File.WriteAllText(fullpath, outText);
+                    value = true;
+                }
+                catch (Exception e)
+                {
+                    Debug(e.StackTrace);
+                }
+            }
+            //方法2
             try
             {
-                WebClient webClient = new WebClient();
-                webClient.Encoding = Encoding.UTF8;
-                string outText = webClient.DownloadString(url);
-                File.WriteAllText(fullpath, outText);
+                FileStream fs = new FileStream(fullpath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+                // 设置参数
+                HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+                request.Method = "GET";
+                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0";
+                //发送请求并获取相应回应数据
+                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                //直到request.GetResponse()程序才开始向目标网页发送Post请求
+                Stream responseStream = response.GetResponseStream();
+                //创建本地文件写入流
+                //Stream stream = new FileStream(tempFile, FileMode.Create);
+                byte[] bArr = new byte[1024];
+                int size = responseStream.Read(bArr, 0, (int)bArr.Length);
+                while (size > 0)
+                {
+                    //stream.Write(bArr, 0, size);
+                    fs.Write(bArr, 0, size);
+                    size = responseStream.Read(bArr, 0, (int)bArr.Length);
+                }
+                //stream.Close();
+                fs.Close();
+                responseStream.Close();
                 value = true;
-            }catch(Exception e)
-            {
-                //Console.WriteLine(e.StackTrace);
             }
+            catch (Exception e)
+            {
+                Debug(e.StackTrace);
+            }
+
             return value;
         }
         /// <summary>
@@ -318,7 +381,7 @@ namespace AutoLogout
         bool logout() 
         {
 #if DEBUG
-            Console.WriteLine("DEBUG Logout!\n");
+            Debug("Logout!");
             return true;
 #endif
             HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create("http://58.240.51.118/logoutServlet");
@@ -336,7 +399,7 @@ namespace AutoLogout
                 //在这个地方应该会抛出404错误
                 //for (int i = 0; i < stream.Length; i++)
                 {
-                    Console.WriteLine(stream.ReadByte() + "");
+                    Debug(stream.ReadByte() + "");
                 }
 
                 response.Close();
@@ -344,7 +407,7 @@ namespace AutoLogout
             }
             catch (WebException e)
             {
-                Console.WriteLine(e.Message);
+                Debug(e.Message);
                 if (e.Message == "The remote server returned an error: (404) Not Found.")return true;
                 //成功断网
             }
@@ -357,7 +420,17 @@ namespace AutoLogout
 
         static void sleep(int s)
         {
+#if DEBUG
+            Thread.Sleep(1000*60*5);
+#else
             Thread.Sleep(1000 * s);
+#endif
+        }
+        static void Debug(string s)
+        {
+#if DEBUG
+            Console.WriteLine(s);
+#endif
         }
     }
 }
