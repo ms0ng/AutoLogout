@@ -6,7 +6,7 @@
   "Configure": {
     "Active": true,
     "RunOnlyOnce": false,
-    "LogoutNow": true,
+    "LogoutNow": false,
     "Time": [
       "14:50",
       "value",
