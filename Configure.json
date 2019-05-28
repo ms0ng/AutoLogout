@@ -6,20 +6,20 @@
   "Configure": {
     "Active": true,
     "RunOnlyOnce": false,
-    "LogoutNow": true,
+    "LogoutNow": ,
     "Time": [
-      "18:10",
+      "20:07",
       "value",
       "value"
     ],
     "Date": {
-      "Sun": false,
-      "Mon": false,
+      "Sun": true,
+      "Mon": true,
       "Tue": true,
-      "Wed": false,
-      "Thu": false,
-      "Fri": false,
-      "Sat": false
+      "Wed": true,
+      "Thu": true,
+      "Fri": true,
+      "Sat": true
     }
   }
 }
