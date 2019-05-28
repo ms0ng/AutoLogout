@@ -30,7 +30,9 @@ namespace AutoLogout
                 {
                     Debug("DEBUG RUN");
                     program.run();
-                }catch(Exception e)
+                    sleep(60 * 5);
+                }
+                catch(Exception e)
                 {
                     Debug(e.Message);
                     criticalError++;
@@ -46,7 +48,7 @@ namespace AutoLogout
                     }
                     sleep(60 * 5);
                 }
-                sleep(60 * 5);
+                
             }
         }
 
