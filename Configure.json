@@ -4,7 +4,7 @@
     "Download": "https://github.com/ms0ng/AutoLogout/raw/master/AutoLogout.exe"
   },
   "Configure": {
-    "Active": true,
+    "Active": false,
     "RunOnlyOnce": false,
     "LogoutNow":false ,
     "Time": [
