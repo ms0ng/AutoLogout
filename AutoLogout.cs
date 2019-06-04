@@ -11,7 +11,7 @@ namespace AutoLogout
 {
     class AutoLogout
     {
-        static string VERSION = "1.0";  //版本号
+        static string VERSION = "1.01";  //版本号
         static string confURL = "https://raw.githubusercontent.com/ms0ng/AutoLogout/master/Configure.json";     //json配置文件地址
         static string serverChanKey = "";        //serverChan URL
 
@@ -19,6 +19,8 @@ namespace AutoLogout
         JObject jobj;
         DateTime dateTime;
         bool needUpdate = false;
+
+        bool initRun = true;
         static void Main(string[] args)
         {
             AutoLogout program = new AutoLogout();
@@ -126,6 +128,7 @@ namespace AutoLogout
                     if (File.Exists(Path.GetTempPath() + "\\Atlg.bat")) File.Delete(Path.GetTempPath() + "\\Atlg.bat");
                     File.WriteAllText(Path.GetTempPath() + "\\Atlg.bat", bat);
                     needUpdate = true;
+                    sendMsg("AutoLogout","正在尝试更新...");
                     System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
                     return;
                 }catch(Exception e)
@@ -139,6 +142,13 @@ namespace AutoLogout
 
             }
             Debug("No need to update");
+            //设置initRun的值为false,代表本次开机已至少成功执行一次以上流程
+            if (initRun == true)
+            {
+                initRun = false;
+                sendMsg("AutoLogout", DateTime.Now.ToString() + "\n开机启动成功,所有配置似乎正常");
+            }
+            
             //检查配置文件激活
             if (jobj["Configure"]["Active"].Value<bool>() == false) return;
 
@@ -153,6 +163,7 @@ namespace AutoLogout
                 try
                 {
                     Debug("Logout NOW!!!");
+                    sendMsg("AutoLogout", "正在尝试断网,LogoutNow的值为true");
                     logout();
                     return;
                 } catch (Exception e)
@@ -246,8 +257,8 @@ namespace AutoLogout
             if (deltaTime > 5) return;
             try
             {
+                sendMsg("AotoLogout","正在尝试断网,若之后无消息接收,则代表断网成功");
                 logout();
-                sendMsg("断网成功!");
             }catch(Exception e)
             {
                 retryTimes++;
