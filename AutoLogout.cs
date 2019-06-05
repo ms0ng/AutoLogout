@@ -11,7 +11,7 @@ namespace AutoLogout
 {
     class AutoLogout
     {
-        static string VERSION = "1.01";  //版本号
+        static string VERSION = "1.02";  //版本号
         static string confURL = "https://raw.githubusercontent.com/ms0ng/AutoLogout/master/Configure.json";     //json配置文件地址
         static string serverChanKey = "";        //serverChan URL
 
@@ -23,6 +23,7 @@ namespace AutoLogout
         bool initRun = true;
         static void Main(string[] args)
         {
+            
             AutoLogout program = new AutoLogout();
             int criticalError = 0;
             Debug("VERSION:"+VERSION);
@@ -32,6 +33,7 @@ namespace AutoLogout
                 {
                     Debug("DEBUG RUN");
                     program.run();
+                    if (program.needUpdate == true) return;
                     sleep(60 * 5);
                 }
                 catch(Exception e)
@@ -129,7 +131,10 @@ namespace AutoLogout
                     File.WriteAllText(Path.GetTempPath() + "\\Atlg.bat", bat);
                     needUpdate = true;
                     sendMsg("AutoLogout","正在尝试更新...");
-                    System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
+                    ThreadStart threadStart = new ThreadStart(runCMD);
+                    Thread t = new Thread(threadStart);
+                    t.Start();
+                    //System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
                     return;
                 }catch(Exception e)
                 {
@@ -272,10 +277,10 @@ namespace AutoLogout
 
         bool sendMsg(string text,string desp)
         {
-#if DEBUG
-            Debug(text + "\n" + desp);
-            return true;
-#endif
+//#if DEBUG
+//            Debug(text + "\n" + desp);
+//            return true;
+//#endif
             string url = serverChanKey;
             url += "?text=" + text;
             if (desp != null) url += "?desp=" + desp;
@@ -427,6 +432,12 @@ namespace AutoLogout
                 throw e;
             }
             return false;
+        }
+        static void runCMD()
+        {
+            Thread.Sleep(5000);
+            System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
+            return;
         }
 
         static void sleep(int s)
