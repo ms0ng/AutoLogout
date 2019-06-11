@@ -1,6 +1,6 @@
 {
   "Edition": {
-    "Version": "1.02",
+    "Version": "1.03",
     "Download": "https://github.com/ms0ng/AutoLogout/raw/master/AutoLogout.exe"
   },
   "Configure": {
@@ -8,7 +8,7 @@
     "RunOnlyOnce": false,
     "LogoutNow":false ,
     "Time": [
-      "16:20",
+      "00:40",
       "value",
       "value"
     ],

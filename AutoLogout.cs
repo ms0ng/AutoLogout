@@ -11,7 +11,7 @@ namespace AutoLogout
 {
     class AutoLogout
     {
-        static string VERSION = "1.02";  //版本号
+        static string VERSION = "1.03";  //版本号
         static string confURL = "https://raw.githubusercontent.com/ms0ng/AutoLogout/master/Configure.json";     //json配置文件地址
         static string serverChanKey = "";        //serverChan URL
 
@@ -38,17 +38,17 @@ namespace AutoLogout
                 }
                 catch(Exception e)
                 {
-                    Debug(e.Message);
+                    Debug("CriticalError:" + e.Message);
                     criticalError++;
                     if (criticalError >= 20)
                     {
-                        program.sendMsg("执行程序时有" + criticalError + "次严重错误,已关闭程序", e.StackTrace);
-                        return;
+                        program.sendMsg("执行程序时有" + criticalError + "次严重错误,已暂停程序1小时", e.Message);
+                        criticalError = 0;
+                        sleep(60 * 60);
                     }
-                    else if (criticalError >= 10)
+                    else if (criticalError >= 15)
                     {
-                        program.sendMsg("执行程序时有" + criticalError + "次严重错误", e.StackTrace);
-                        continue;
+                        program.sendMsg("执行程序时有" + criticalError + "次严重错误", e.Message);
                     }
                     sleep(60 * 5);
                 }
