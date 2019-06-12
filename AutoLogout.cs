@@ -11,7 +11,7 @@ namespace AutoLogout
 {
     class AutoLogout
     {
-        static string VERSION = "1.03";  //版本号
+        static string VERSION = "1.04";  //版本号
         static string confURL = "https://raw.githubusercontent.com/ms0ng/AutoLogout/master/Configure.json";     //json配置文件地址
         static string serverChanKey = "";        //serverChan URL
 
@@ -46,7 +46,7 @@ namespace AutoLogout
                         criticalError = 0;
                         sleep(60 * 60);
                     }
-                    else if (criticalError >= 15)
+                    else if (criticalError %5==0)
                     {
                         program.sendMsg("执行程序时有" + criticalError + "次严重错误", e.Message);
                     }
@@ -119,7 +119,7 @@ namespace AutoLogout
                 //安装更新
                 string path = System.Environment.CurrentDirectory ;
                 string bat = "@echo off\r\n" +
-                    //"ping localhost -n 5 > nul\r\n" +
+                    "ping localhost -n 1 > nul\r\n" +
                     "del " + path + "\\AutoLogout.exe > nul\r\n" +
                     "copy /y " + Path.GetTempPath() + "AutoLogout.exe " + path + "\\AutoLogout.exe > nul\r\n"
                     + "del " + Path.GetTempPath() + "AutoLogout.exe > nul\r\n"+
@@ -151,7 +151,7 @@ namespace AutoLogout
             if (initRun == true)
             {
                 initRun = false;
-                sendMsg("AutoLogout", DateTime.Now.ToString() + "\n开机启动成功,所有配置似乎正常");
+                sendMsg("AutoLogout_V"+VERSION+":"+DateTime.Now.ToString() + "\n启动成功");
             }
             
             //检查配置文件激活
@@ -323,31 +323,10 @@ namespace AutoLogout
             }
             string fullpath = path + name;
             if (name.LastIndexOf(".") == -1) fullpath = path + name + url.Substring(url.LastIndexOf("."));
-            if (File.Exists(fullpath))
-            {
-                File.Delete(fullpath);
-            }
-
-            //方法1
-            if(false)
-            {
-                try
-                {
-                    WebClient webClient = new WebClient();
-                    webClient.Encoding = Encoding.UTF8;
-                    string outText = webClient.DownloadString(url);
-                    File.WriteAllText(fullpath, outText);
-                    value = true;
-                }
-                catch (Exception e)
-                {
-                    Debug(e.StackTrace);
-                }
-            }
-            //方法2
             try
             {
-                FileStream fs = new FileStream(fullpath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+                if (File.Exists(fullpath))File.Delete(fullpath);
+                FileStream fs = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
                 // 设置参数
                 HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
                 request.Method = "GET";
@@ -369,6 +348,7 @@ namespace AutoLogout
                 //stream.Close();
                 fs.Close();
                 responseStream.Close();
+                response.Close();
                 value = true;
             }
             catch (Exception e)
