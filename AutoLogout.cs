@@ -6,7 +6,6 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 
-
 namespace AutoLogout
 {
     class AutoLogout
@@ -51,6 +50,11 @@ namespace AutoLogout
                     else if (criticalError %5==0)
                     {
                         program.sendMsg("执行程序时有" + criticalError + "次严重错误", e.Message);
+                    }else if (criticalError>50)
+                    {
+                        //重启程序
+                        System.Diagnostics.Process.Start("@echo off\r\n" + System.Environment.CurrentDirectory + "\\AutoLogout.exe > nul");
+                        return;
                     }
                     sleep(60 * 5);
                 }
@@ -421,7 +425,10 @@ namespace AutoLogout
             System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
             return;
         }
-
+        static void runCMD(String str)
+        {
+            System.Diagnostics.Process.Start(str);
+        }
         static void sleep(int s)
         {
 #if DEBUG
