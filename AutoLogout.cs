@@ -40,11 +40,13 @@ namespace AutoLogout
                 {
                     Debug("CriticalError:" + e.Message);
                     criticalError++;
-                    if (criticalError >= 20)
+                    if (criticalError > 20)
                     {
-                        program.sendMsg("执行程序时有" + criticalError + "次严重错误,已暂停程序1小时", e.Message);
-                        criticalError = 0;
-                        sleep(60 * 60);
+
+                    }
+                    else if (criticalError ==20)
+                    {
+                        program.sendMsg("执行程序时有" + criticalError + "次严重错误,已暂停错误推送", e.Message);
                     }
                     else if (criticalError %5==0)
                     {
