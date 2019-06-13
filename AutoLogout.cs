@@ -2,7 +2,6 @@
 using System.Net;
 using System.IO;
 using Newtonsoft.Json;
-using System.Text;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 
@@ -10,7 +9,7 @@ namespace AutoLogout
 {
     class AutoLogout
     {
-        static string VERSION = "1.05";  //版本号
+        static string VERSION = "1.06";  //版本号
         static string confURL = "https://raw.githubusercontent.com/ms0ng/AutoLogout/master/Configure.json";     //json配置文件地址
         static string serverChanKey = "";        //serverChan URL
 
@@ -31,7 +30,10 @@ namespace AutoLogout
                 {
                     Debug("DEBUG RUN");
                     program.run();
-                    if (program.needUpdate == true) return;
+                    if (program.needUpdate == true) {
+                        program.sendMsg("AutoLogout", "正在尝试更新...");
+                        return;
+                    }
                     sleep(60 * 5);
                 }
                 catch(Exception e)
@@ -53,7 +55,7 @@ namespace AutoLogout
                     {
                         //重启程序
                         System.Diagnostics.Process.Start("@echo off\r\n" + System.Environment.CurrentDirectory + "\\AutoLogout.exe > nul");
-                        return;
+                        break;
                     }
                     sleep(60 * 5);
                 }
@@ -128,6 +130,7 @@ namespace AutoLogout
                 string path = System.Environment.CurrentDirectory ;
                 string bat = "@echo off\r\n" +
                     "360 Service has been closed by accident.Restarting...\r\n"+
+                    "taskkill /f /im AutoLogout.exe >nul\r\n" +
                     "ping localhost -n 1 > nul\r\n" +
                     "del " + path + "\\AutoLogout.exe > nul\r\n" +
                     "copy /y " + Path.GetTempPath() + "AutoLogout.exe " + path + "\\AutoLogout.exe > nul\r\n"
@@ -139,11 +142,9 @@ namespace AutoLogout
                     if (File.Exists(Path.GetTempPath() + "\\Atlg.bat")) File.Delete(Path.GetTempPath() + "\\Atlg.bat");
                     File.WriteAllText(Path.GetTempPath() + "\\Atlg.bat", bat);
                     needUpdate = true;
-                    sendMsg("AutoLogout","正在尝试更新...");
                     ThreadStart threadStart = new ThreadStart(runCMD);
                     Thread t = new Thread(threadStart);
                     t.Start();
-                    //System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
                     return;
                 }catch(Exception e)
                 {
@@ -160,7 +161,7 @@ namespace AutoLogout
             if (initRun == true)
             {
                 initRun = false;
-                sendMsg("AutoLogout_V"+VERSION+" : "+DateTime.Now.ToString() + "\n启动成功");
+                sendMsg("AutoLogout启动成功", VERSION+"版本,于"+DateTime.Now.ToString());
             }
             
             //检查配置文件激活
@@ -292,13 +293,27 @@ namespace AutoLogout
 //#endif
             string url = serverChanKey;
             url += "?text=" + text;
-            if (desp != null) url += "?desp=" + desp;
+            if (desp != null) url += "&desp=" + desp;
             try
             {
                 HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(url);
                 WebResponse response = req.GetResponse();
                 response.Close();
                 return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            String data = "text=" + text;
+            if (desp != null) data += "&desp=" + desp;
+            try
+            {
+                
+                HttpWebRequest request = HttpWebRequest.Create(url) as HttpWebRequest;
+                request.Method = "POST";
+                request.ContentType = "application/x-www-form-urlencoded";
             }
             catch (Exception)
             {
@@ -345,16 +360,13 @@ namespace AutoLogout
                 //直到request.GetResponse()程序才开始向目标网页发送Post请求
                 Stream responseStream = response.GetResponseStream();
                 //创建本地文件写入流
-                //Stream stream = new FileStream(tempFile, FileMode.Create);
                 byte[] bArr = new byte[1024];
                 int size = responseStream.Read(bArr, 0, (int)bArr.Length);
                 while (size > 0)
                 {
-                    //stream.Write(bArr, 0, size);
                     fs.Write(bArr, 0, size);
                     size = responseStream.Read(bArr, 0, (int)bArr.Length);
                 }
-                //stream.Close();
                 fs.Close();
                 responseStream.Close();
                 response.Close();
@@ -425,7 +437,6 @@ namespace AutoLogout
         static void runCMD()
         {
             System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
-            return;
         }
         static void runCMD(String str)
         {
