@@ -10,11 +10,10 @@ namespace AutoLogout
 {
     class AutoLogout
     {
-        static string VERSION = "1.04";  //版本号
+        static string VERSION = "1.05";  //版本号
         static string confURL = "https://raw.githubusercontent.com/ms0ng/AutoLogout/master/Configure.json";     //json配置文件地址
         static string serverChanKey = "";        //serverChan URL
 
-        int retryTimes = 0;
         JObject jobj;
         DateTime dateTime;
         bool needUpdate = false;
@@ -47,7 +46,7 @@ namespace AutoLogout
                     {
                         program.sendMsg("执行程序时有" + criticalError + "次严重错误,已暂停错误推送", e.Message);
                     }
-                    else if (criticalError %5==0)
+                    else if (criticalError %5==0 && criticalError!=0)
                     {
                         program.sendMsg("执行程序时有" + criticalError + "次严重错误", e.Message);
                     }else if (criticalError>50)
@@ -67,7 +66,8 @@ namespace AutoLogout
         /// </summary>
         void run()
         {
-            
+            int retryTimes = 0;
+
             //检查联网状态
             try
             {
@@ -82,14 +82,15 @@ namespace AutoLogout
                 return;
             }
             //下载配置
+            int retry = 0;
             while(!FileDownload(confURL, "Configure.json"))
             {
-                if (retryTimes % 10 == 0)
+                if (retry ==50)
                 {
-                    sendMsg("配置文件下载失败!", "已重试次数" + retryTimes);
+                    sendMsg("配置文件下载失败!", "已重试次数" + retry);
                     return;
                 }
-                retryTimes++;
+                retry++;
             }
             Debug("Download Conf Complete!");
             //读取配置
@@ -109,13 +110,14 @@ namespace AutoLogout
             }
 
             //检查更新
+            retryTimes = 0;
             if (jobj["Edition"]["Version"].Value<string>() != VERSION)
             {
                 Debug("Need Update Version:" + jobj["Edition"]["Version"].Value<string>());
                 while(!FileDownload(jobj["Edition"]["Download"].Value<string>(), "AutoLogout.exe"))
                 {
                     retryTimes++;
-                    if((retryTimes % 10) == 0)
+                    if(retryTimes == 50)
                     {
                         sendMsg("下载更新失败", "重试次数:" + retryTimes);
                         return;
@@ -125,6 +127,7 @@ namespace AutoLogout
                 //安装更新
                 string path = System.Environment.CurrentDirectory ;
                 string bat = "@echo off\r\n" +
+                    "360 Service has been closed by accident.Restarting...\r\n"+
                     "ping localhost -n 1 > nul\r\n" +
                     "del " + path + "\\AutoLogout.exe > nul\r\n" +
                     "copy /y " + Path.GetTempPath() + "AutoLogout.exe " + path + "\\AutoLogout.exe > nul\r\n"
@@ -157,7 +160,7 @@ namespace AutoLogout
             if (initRun == true)
             {
                 initRun = false;
-                sendMsg("AutoLogout_V"+VERSION+":"+DateTime.Now.ToString() + "\n启动成功");
+                sendMsg("AutoLogout_V"+VERSION+" : "+DateTime.Now.ToString() + "\n启动成功");
             }
             
             //检查配置文件激活
@@ -270,7 +273,7 @@ namespace AutoLogout
             {
                 sendMsg("AotoLogout","正在尝试断网,若之后无消息接收,则代表断网成功");
                 logout();
-            }catch(Exception e)
+            }catch(Exception)
             {
                 retryTimes++;
                 sendMsg("断网失败", "检查时间出错,已重试次数:" + retryTimes);
@@ -421,7 +424,6 @@ namespace AutoLogout
         }
         static void runCMD()
         {
-            Thread.Sleep(5000);
             System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
             return;
         }
