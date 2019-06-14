@@ -4,12 +4,13 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using System.Diagnostics;
 
 namespace AutoLogout
 {
     class AutoLogout
     {
-        static string VERSION = "1.06";  //版本号
+        static string VERSION = "1.07";  //版本号
         static string confURL = "https://raw.githubusercontent.com/ms0ng/AutoLogout/master/Configure.json";     //json配置文件地址
         static string serverChanKey = "";        //serverChan URL
 
@@ -32,7 +33,7 @@ namespace AutoLogout
                     program.run();
                     if (program.needUpdate == true) {
                         program.sendMsg("AutoLogout", "正在尝试更新...");
-                        return;
+                        break;
                     }
                     sleep(60 * 5);
                 }
@@ -59,8 +60,8 @@ namespace AutoLogout
                     }
                     sleep(60 * 5);
                 }
-                
             }
+            return;
         }
 
         /// <summary>
@@ -85,9 +86,9 @@ namespace AutoLogout
             }
             //下载配置
             int retry = 0;
-            while(!FileDownload(confURL, "Configure.json"))
+            while (!FileDownload(confURL, "Configure.json")) sleep(60);
             {
-                if (retry ==50)
+                if (retry ==50&&false)
                 {
                     sendMsg("配置文件下载失败!", "已重试次数" + retry);
                     return;
@@ -436,7 +437,14 @@ namespace AutoLogout
         }
         static void runCMD()
         {
-            System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
+            //System.Diagnostics.Process.Start(Path.GetTempPath() + "\\Atlg.bat");
+            var processInfo = new ProcessStartInfo(Path.GetTempPath() + "\\Atlg.bat") {
+                CreateNoWindow = true,
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+            Process.Start(processInfo);
+           
         }
         static void runCMD(String str)
         {

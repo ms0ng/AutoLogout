@@ -1,6 +1,6 @@
 {
   "Edition": {
-    "Version": "1.06",
+    "Version": "1.07",
     "Download": "https://github.com/ms0ng/AutoLogout/raw/master/AutoLogout.exe"
   },
   "Configure": {
@@ -18,7 +18,7 @@
       "Tue": true,
       "Wed": true,
       "Thu": true,
-      "Fri": true,
+      "Fri": false,
       "Sat": true
     }
   }
