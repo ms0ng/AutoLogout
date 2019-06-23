@@ -13,13 +13,13 @@
       "value"
     ],
     "Date": {
-      "Sun": true,
+      "Sun": false,
       "Mon": true,
       "Tue": true,
       "Wed": true,
       "Thu": true,
       "Fri": false,
-      "Sat": true
+      "Sat": false
     }
   }
 }
